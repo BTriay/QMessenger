@@ -3,3 +3,10 @@ QMessenger
 * IM with a private server
 * Uses sqlite to keep the users' circles
 * Client interface in Qt
+
+
+Folders are organized as:
+./server
+./sqlite-amalgamation
+	Download and extract here the sqlite amalgation files from:
+	https://www.sqlite.org/download.html

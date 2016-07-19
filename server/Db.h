@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <iterator>
-#include "../sqlite-amalgamation-3130000/sqlite3.h"
+#include "../sqlite-amalgamation/sqlite3.h"
 #include <pthread.h>
 
 #include <iostream>
