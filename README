@@ -1,0 +1,5 @@
+QMessenger
+
+* IM with a private server
+* Uses sqlite to keep the users' circles
+* Client interface in Qt

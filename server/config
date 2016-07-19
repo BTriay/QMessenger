@@ -1,0 +1,3 @@
+port=53490
+threadspool=4
+db=qm.db
