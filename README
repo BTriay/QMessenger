@@ -6,6 +6,7 @@ QMessenger
 
 
 Folders are organized as:
+./client
 ./server
 ./sqlite-amalgamation
 	Download and extract here the sqlite amalgation files from:
