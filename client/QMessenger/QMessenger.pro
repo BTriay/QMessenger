@@ -1,10 +1,16 @@
-QT += widgets network
+QMAKE_CXXFLAGS += -std=c++11
+
+QT += widgets network testlib
 
 SOURCES += \
     main.cpp \
-    StartWindow.cpp \
-    ../../parser.cpp
+    ConnectionWindow.cpp \
+    ../../parser.cpp \
+    RoomWindow.cpp \
+    MainWindow.cpp
 
 HEADERS += \
-    StartWindow.h \
-    ../../parser.h
+    ConnectionWindow.h \
+    ../../parser.h \
+    RoomWindow.h \
+    MainWindow.h
