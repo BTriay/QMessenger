@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define BUF_SZ		512
+#define BUF_SZ		256
 
 static pthread_mutex_t mtxEpoll = PTHREAD_MUTEX_INITIALIZER;
 
@@ -19,8 +19,6 @@ void* threadStart(void *arg) {
 	int event;
 	int i;
 
-std::cout << "new thread\n";
-
 	while (true) {
 		if (pthread_mutex_lock(&mtxEpoll) != 0)
 			std::cout << "mutex lock pb\n";
@@ -33,65 +31,57 @@ std::cout << "new thread\n";
 		if (pthread_mutex_unlock(&mtxEpoll) != 0)
 			std::cout << "mutex unlock pb\n";
 
-		if (event & EPOLLHUP) {
-			matrix->rmUser(ev[0].data.fd);
+		if (event & EPOLLRDHUP) {
+//			matrix->rmUser(ev[0].data.fd);
 			close(ev[0].data.fd);
+			std::cout << "peer hangup\n";
 		}
-		else {
+		else if (event & EPOLLIN) {
 			msg.clear();
-			msgTokens.clear();
 			getSocketMsg(msg, fd);
-			if (!msg.empty()) {
-				i = msgReader(msg, msgTokens);
-
-std::vector<std::string>::iterator it;
-for (it = msgTokens.begin(); it != msgTokens.end(); it++)
-	std::cout << *it << std::endl;
+			if (!msg.empty()) //{
+				std::cout << "msg: " << msg << std::endl << std::endl;
 /*
+				msgTokens.clear();
+				i = msgReader(msg, msgTokens);
 				switch (i) {
 					case ROOM_MSG:
-
 						break;
 					case KEEPALIVE:
-
 						break;
 	//... many more cases to handle
 				}
-*/
 			}
+*/
 			rearmFD(serverData->epfd, fd);
 		}
 	}
-
 }
 
 void getSocketMsg(std::string& msg, int fd) {
 	char c_msg[BUF_SZ];
 	uint16_t len;
-	size_t msgSz;
+	int msgSz;
 	int i = 0;
 
-	i = read(fd, static_cast<void*> (&len), sizeof(uint16_t));
+	i = read(fd, &len, sizeof(uint16_t));
 	if (i == -1) {
 		std::cout << "error read msg\n"; //if errno = EAGAIN then ignore and return msg="";
 		return;
 	}
-	if (i == 0) {
-		std::cout << "nothing read\n";
-		return;
-	}
-	msgSz = ntohs( static_cast<uint16_t> (len) );
-//if error in msgSz, then... trouble. Read as much as possible and discard
+	msgSz = ntohs(static_cast<uint16_t> (len));//..if problem here
 
-	do {
+	while (msgSz) {
 		i = read(fd, c_msg, msgSz >= BUF_SZ ? BUF_SZ -1 : msgSz);
-		if (i == -1)
+		if (i == -1) { //..will read as much as possible here and discard
 			std::cout << "error read msg\n";
-//how to handle the case where (i > 0 && i < msgSz) ? in theory, should not happen
+			msg.clear();
+			return;
+		}
 		c_msg[i] = '\0';
 		msg += c_msg;
-		msgSz -= BUF_SZ;
-	} while (msgSz);
+		msgSz -= i;
+	}
 }
 
 void rearmFD(int epfd, int fd) {
@@ -99,7 +89,6 @@ void rearmFD(int epfd, int fd) {
 	struct epoll_event ev;
 	ev.events = EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLONESHOT;
 	ev.data.fd = fd;
-
 	s = epoll_ctl(epfd, EPOLL_CTL_MOD , fd, &ev);
 	if (s < 0)
 		std::cout << "error: epoll_ctl\n";
