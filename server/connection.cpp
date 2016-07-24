@@ -2,14 +2,18 @@
 
 int serverInit(const char* port) {
 	int sock = sbind(port);
-	slisten(sock);
+	int i = slisten(sock);
+	if (i < 0)
+		return -1;
 	return sock;
 }
 
 int ssocket() {
 	int sock;
-	if ( (sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ( (sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		std::cout << "error: socket\n";
+		return -1;
+	}
 	return sock;
 }
 
@@ -26,12 +30,14 @@ int sbind(const char* port) {
 		}
 		break;
 	}
-	if (p == NULL)
+	if (p == NULL) {
 		std::cout << "error: bind\n";
+		return -1;
+	}
 	return sock;
 }
 
-void getaddrinfoRes(struct addrinfo **res, const char* port) {
+int getaddrinfoRes(struct addrinfo **res, const char* port) {
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = AF_INET;
@@ -39,31 +45,34 @@ void getaddrinfoRes(struct addrinfo **res, const char* port) {
 	hints.ai_protocol = 0;
 	hints.ai_flags = AI_PASSIVE;
 
-	if (getaddrinfo(NULL, port, &hints, res) < 0)
+	if (getaddrinfo(NULL, port, &hints, res) < 0) {
 		std::cout << "error: getaddrinfoRes\n";
+		return -1;
+	}
+	return 0;
 }
 
-void slisten(int sock) {
-	if (listen(sock, BACKLOG) < 0)
+int slisten(int sock) {
+	if (listen(sock, BACKLOG) < 0) {
 		std::cout << "error: listen\n";
+		return -1;
+	}
+	return 0;
 }
 
 void s_accept(int sockfd, int epfd) {
 	int new_sockfd;
 	int flags;
-std::cout << "waiting for new connections\n";
-/*
+	int s;
 	while (true) {
-		if ( new_sockfd = accept(sockfd, NULL, NULL) < 0)
-			std::cout << "error: accept\n";
-		else if (new_sockfd > 0) {
-			flags = fcntl(new_sockfd, F_GETFL);
+		if ( (new_sockfd = accept(sockfd, NULL, NULL)) < 0)
+			std::cout << "error: accept. Error: " << errno << std::endl;
+		else
+			s = flags = fcntl(new_sockfd, F_GETFL);
 			flags |= O_NONBLOCK;
 			fcntl(new_sockfd, F_SETFL, flags);
 			epollList(new_sockfd, epfd);
-		}
 	}
-*/
 }
 
 void epollList(int sock, int epfd) {

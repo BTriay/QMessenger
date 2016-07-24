@@ -15,7 +15,7 @@
 int serverInit(const char* port); //returns the listening socket fd
 int ssocket();
 int sbind(const char* port);
-void getaddrinfoRes(struct addrinfo **res, const char* port);
-void slisten(int sock);
+int getaddrinfoRes(struct addrinfo **res, const char* port);
+int slisten(int sock);
 void s_accept(int sockfd, int epfd);
 void epollList(int sock, int epfd);
