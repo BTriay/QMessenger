@@ -1,4 +1,4 @@
-objFiles = main.o connection.o threads.o Db.o MatrixServer.o UserServer.o User.o RoomServer.o Room.o sqlite3.o parser.o
+objFiles = main.o connection.o threads.o Db.o MatrixServer.o UserServer.o User.o RoomServer.o sqlite3.o parser.o
 
 all:server
 
@@ -26,17 +26,14 @@ User.o: ../User.cpp
 RoomServer.o: RoomServer.cpp
 	g++ -c -std=c++11 RoomServer.cpp
 
-Room.o: ../Room.cpp
-	g++ -c -std=c++11 ../Room.cpp
-
 parser.o: ../parser.cpp
 	g++ -c -std=c++11 ../parser.cpp
 
 connection.o: connection.cpp
 	g++ -c -std=c++11 connection.cpp
 
-sqlite3.o: ../sqlite-amalgamation-3130000/sqlite3.c
-	gcc -c ../sqlite-amalgamation-3130000/sqlite3.c -lpthread -ldl
+sqlite3.o: ../sqlite-amalgamation/sqlite3.c
+	gcc -c ../sqlite-amalgamation/sqlite3.c -lpthread -ldl
 
 clean:
 	rm *.o
