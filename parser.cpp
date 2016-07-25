@@ -29,9 +29,18 @@ int msgReader(std::string const & msg, std::vector<std::string>& tokens) {
 	return i;
 }
 
-void msgWriter(std::string& msg, std::vector<std::string>& tokens) {
-	std::stringstream s(msg, std::ios_base::out);
+char* msgWriter(std::string& msg, std::vector<std::string>& tokens, int identifier, size_t* size) {
 	std::vector<std::string>::iterator it;
+	msg += std::to_string(identifier) + "\n";
 	for (it = tokens.begin(); it != tokens.end(); it++)
 		msg+= *it + "\n";
+
+    uint16_t sz = msg.length();
+    uint16_t nsz = htons(sz);
+    *size = sz + sizeof(uint16_t);
+    char* buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+    memcpy(buf, &nsz, sizeof(uint16_t));
+    memcpy(buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+    buf[sz + sizeof(uint16_t) + 1] = '\0';
+	return buf;	
 }

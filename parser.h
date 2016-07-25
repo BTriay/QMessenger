@@ -7,6 +7,9 @@
 #include <sstream>
 #include <iterator>
 #include <iostream>
+#include <stdlib.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 //message type identifier
 #define ROOM_MSG						1
@@ -35,6 +38,6 @@
 
 bool configFileReader(std::string const & filename, std::vector<std::string>& tokens);
 int msgReader(std::string const & msg, std::vector<std::string>& tokens);
-void msgWriter(std::string& msg, std::vector<std::string>& tokens);
+char* msgWriter(std::string& msg, std::vector<std::string>& tokens, int identifier, size_t* size);
 
 #endif
