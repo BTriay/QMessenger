@@ -52,7 +52,7 @@ void MainWindow::socketErr(QAbstractSocket::SocketError err) {
 }
 
 void MainWindow::connection() {
-    ConnectionWindow cw(a_socket);
-    cw.show();
+    cw = new ConnectionWindow(a_socket);
+    cw->show();
 }
 /* ************************************ END OF SLOTS ************************************ */

@@ -35,10 +35,10 @@ private:
     QPushButton* a_pbRmAFriend;
     QLineEdit* a_leRmAFriend;
     QPushButton* a_pbExit;
-
     QLabel* a_leMessage;
 
     QTcpSocket* a_socket;
+    ConnectionWindow* cw;
 public:
     MainWindow();
 
