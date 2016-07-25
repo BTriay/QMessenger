@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QTextEdit>
+#include <QCheckBox>
 #include <QLabel>
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -35,7 +36,7 @@ private:
     QLabel* a_leMessage;
     QPushButton* a_pbConnect;
     QPushButton* a_pbExit;
-    QPushButton* a_pbNewUser;
+    QCheckBox* a_cbNewUser;
 
     void readProfile(std::string& username, std::string& domain, std::string& port);
     void serverConnectionAttempt();
@@ -51,7 +52,7 @@ public slots:
     void serverConnectionSuccess();
     void socketErr(QAbstractSocket::SocketError err);
     void newUser();
-    void knownUser();
+    void connection();
 };
 
 #endif // CONNECTIONWINDOW_H
