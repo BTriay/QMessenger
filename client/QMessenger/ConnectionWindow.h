@@ -13,6 +13,9 @@
 #include <QHBoxLayout>
 
 #include <QString>
+#include <QTime>
+#include <string>
+#include <vector>
 #include <QTcpSocket>
 #include <arpa/inet.h>
 
@@ -40,6 +43,7 @@ private:
 
     void readProfile(std::string& username, std::string& domain, std::string& port);
     void serverConnectionAttempt();
+    void serverHello(bool isNewUser);
 
     QTcpSocket* a_socket;
 
@@ -49,10 +53,11 @@ public:
 signals:
 
 public slots:
-    void serverConnectionSuccess();
-    void socketErr(QAbstractSocket::SocketError err);
-    void newUser();
-    void connection();
+    void slot_serverConnectionSuccess();
+    void slot_socketErr(QAbstractSocket::SocketError err);
+    void slot_newUserCheckBox();
+    void slot_connection();
+    void slot_identification();
 };
 
 #endif // CONNECTIONWINDOW_H

@@ -58,10 +58,11 @@ ConnectionWindow::ConnectionWindow(QTcpSocket* socket) : QWidget () {
     this->setAttribute(Qt::WA_DeleteOnClose);
 
     QObject::connect(a_pbExit, SIGNAL(clicked()), this, SLOT(close()));
-    QObject::connect(a_pbConnect, SIGNAL(clicked()), this, SLOT(connection()));
-    QObject::connect(a_cbNewUser, SIGNAL(clicked()), this, SLOT(newUser()));
-    QObject::connect(a_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketErr(QAbstractSocket::SocketError)));
-    QObject::connect(a_socket, SIGNAL(connected()), this, SLOT(serverConnectionSuccess()));
+    QObject::connect(a_pbConnect, SIGNAL(clicked()), this, SLOT(slot_connection()));
+    QObject::connect(a_cbNewUser, SIGNAL(clicked()), this, SLOT(slot_newUserCheckBox()));
+    QObject::connect(a_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slot_socketErr(QAbstractSocket::SocketError)));
+    QObject::connect(a_socket, SIGNAL(connected()), this, SLOT(slot_serverConnectionSuccess()));
+    QObject::connect(a_socket, SIGNAL(connected()), this, SLOT(slot_identification()));
 }
 
 /* ************************************ END OF PUBLIC FUNCTIONS ************************************ */
@@ -101,32 +102,50 @@ void ConnectionWindow::serverConnectionAttempt() {
     else
         a_leMessage->setText("Invalid port number");
 }
+
+void ConnectionWindow::serverHello(bool isNewUser) {
+    size_t sz;
+    char* buf;
+    std::string msg;
+    std::vector<std::string> tokens;
+    tokens.push_back(a_leUsername->text().toStdString());
+    tokens.push_back(a_lePwd->text().toStdString());
+    buf = msgWriter(msg, tokens, isNewUser ? NEW_USER : HELLO, &sz);
+    a_socket->write(buf, sz);
+    free(buf);
+}
+
 /* ************************************ END OF PRIVATE FUNCTIONS ************************************ */
 
 /* ************************************ SLOTS ************************************ */
-void ConnectionWindow::serverConnectionSuccess() {
+void ConnectionWindow::slot_serverConnectionSuccess() {
     a_leMessage->setText("Connected");
 }
 
-void ConnectionWindow::socketErr(QAbstractSocket::SocketError err) {
+void ConnectionWindow::slot_socketErr(QAbstractSocket::SocketError err) {
     QString errMsg;
     errMsg = a_socket->errorString();
     a_leMessage->setText(errMsg);
 }
 
-void ConnectionWindow::newUser() {
+void ConnectionWindow::slot_newUserCheckBox() {
     if (a_cbNewUser->isChecked ())
         a_lePwdConf->setDisabled(false);
     else
         a_lePwdConf->setDisabled(true);
 }
 
-void ConnectionWindow::connection() {
+void ConnectionWindow::slot_connection() {
     if (a_cbNewUser->isChecked())
         if (a_lePwd->text() != a_lePwdConf->text()) {
             a_leMessage->setText("The passwords do not match");
             return;
         }
     serverConnectionAttempt();
+}
+
+void ConnectionWindow::slot_identification() {
+    if (a_socket->state() == QAbstractSocket::ConnectedState)
+        serverHello(a_cbNewUser->isChecked());
 }
 /* ************************************ END OF SLOTS ************************************ */
