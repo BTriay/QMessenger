@@ -60,4 +60,12 @@ public slots:
     void slot_identification();
 };
 
+class MsgBuffer {
+    char* a_buf;
+public:
+    MsgBuffer(char* buf) { a_buf = buf; }
+    ~MsgBuffer() { free(a_buf); }
+    char* getBuffer() {return a_buf;}
+};
+
 #endif // CONNECTIONWINDOW_H

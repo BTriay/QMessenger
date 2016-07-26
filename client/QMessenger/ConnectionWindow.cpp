@@ -105,14 +105,12 @@ void ConnectionWindow::serverConnectionAttempt() {
 
 void ConnectionWindow::serverHello(bool isNewUser) {
     size_t sz;
-    char* buf;
     std::string msg;
     std::vector<std::string> tokens;
     tokens.push_back(a_leUsername->text().toStdString());
     tokens.push_back(a_lePwd->text().toStdString());
-    buf = msgWriter(msg, tokens, isNewUser ? NEW_USER : HELLO, &sz);
-    a_socket->write(buf, sz);
-    free(buf);
+    MsgBuffer mb(msgWriter(msg, tokens, isNewUser ? NEW_USER : HELLO, &sz));
+    a_socket->write(mb.getBuffer(), sz);
 }
 
 /* ************************************ END OF PRIVATE FUNCTIONS ************************************ */
@@ -139,6 +137,10 @@ void ConnectionWindow::slot_connection() {
     if (a_cbNewUser->isChecked())
         if (a_lePwd->text() != a_lePwdConf->text()) {
             a_leMessage->setText("The passwords do not match");
+            return;
+        }
+    if (a_lePwd->text().isEmpty()) {
+            a_leMessage->setText("Please enter your password");
             return;
         }
     serverConnectionAttempt();
