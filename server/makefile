@@ -1,4 +1,4 @@
-objFiles = main.o connection.o threads.o Db.o MatrixServer.o UserServer.o User.o RoomServer.o sqlite3.o parser.o
+objFiles = main.o connection.o threads.o ThreadFunc.o Db.o MatrixServer.o UserServer.o User.o RoomServer.o sqlite3.o parser.o
 
 all:server
 
@@ -7,6 +7,9 @@ server: $(objFiles)
 
 main.o: main.cpp
 	g++ -c -std=c++11 main.cpp
+
+ThreadFunc.o: ThreadFunc.cpp
+	g++ -c -std=c++11 ThreadFunc.cpp -lpthread -ldl
 
 threads.o: threads.cpp
 	g++ -c -std=c++11 threads.cpp -lpthread -ldl
