@@ -37,7 +37,7 @@
 #define CONFIG_PORT					"port"
 
 bool configFileReader(std::string const & filename, std::vector<std::string>& tokens);
-int msgReader(std::string const & msg, std::vector<std::string>& tokens);
+int msgParser(std::string const & msg, std::vector<std::string>& tokens);
 char* msgWriter(std::string& msg, std::vector<std::string>& tokens, int identifier, size_t* size);
 
 #endif

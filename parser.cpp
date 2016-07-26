@@ -18,10 +18,10 @@ bool configFileReader(std::string const & filename, std::vector<std::string>& to
 		return false;
 }
 
-int msgReader(std::string const & msg, std::vector<std::string>& tokens) {
+int msgParser(std::string const & msg, std::vector<std::string>& tokens) {
 	std::stringstream s(msg, std::ios_base::in);
 	int i;
-	s >> i;
+	s >> i; //check that i is an int; if not, return -1
 	s.ignore();
 	std::string str;
 	while (getline(s, str))
