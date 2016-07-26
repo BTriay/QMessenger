@@ -1,4 +1,4 @@
-#include "main.h"
+#include "ThreadFunc.h"
 
 #define BUF_SZ		256
 
@@ -7,9 +7,7 @@ static pthread_mutex_t mtxEpoll = PTHREAD_MUTEX_INITIALIZER;
 void* threadStart(void *arg) {
 
 	pthread_detach(pthread_self());
-	Bundle *serverData = reinterpret_cast<Bundle *> (arg);
-	Db* db = serverData->db;
-	MatrixServer* matrix = serverData->matrix;
+	ThreadFunc func(reinterpret_cast<Bundle *> (arg));
 
 	std::string msg;
 	std::vector<std::string> msgTokens;
@@ -23,7 +21,7 @@ void* threadStart(void *arg) {
 		if (pthread_mutex_lock(&mtxEpoll) != 0)
 			std::cout << "mutex lock pb\n";
 
-		if (epoll_wait(serverData->epfd, ev, 1, -1) == -1)
+		if (epoll_wait(func.epfd(), ev, 1, -1) == -1)
 			std::cout << "error epoll_wait\n";
 		event = ev[0].events;
 		fd = ev[0].data.fd;
@@ -32,28 +30,22 @@ void* threadStart(void *arg) {
 			std::cout << "mutex unlock pb\n";
 
 		if (event & EPOLLRDHUP) {
-//			matrix->rmUser(ev[0].data.fd);
-			close(ev[0].data.fd);
+			func(RM_USER, fd, msgTokens);
+			close(fd);
 			std::cout << "peer hangup\n";
 		}
 		else if (event & EPOLLIN) {
 			msg.clear();
 			getSocketMsg(msg, fd);
-			if (!msg.empty()) //{
-				std::cout << "msg: " << msg << std::endl << std::endl;
-/*
+			if (!msg.empty()) {
 				msgTokens.clear();
-				i = msgReader(msg, msgTokens);
-				switch (i) {
-					case ROOM_MSG:
-						break;
-					case KEEPALIVE:
-						break;
-	//... many more cases to handle
-				}
+				i = msgParser(msg, msgTokens);
+				if (i == -1)
+					emptySocket(fd);
+				else
+					func(i, fd, msgTokens);
 			}
-*/
-			rearmFD(serverData->epfd, fd);
+			rearmFD(func.epfd(), fd);
 		}
 	}
 }
@@ -69,11 +61,13 @@ void getSocketMsg(std::string& msg, int fd) {
 		std::cout << "error read msg\n"; //if errno = EAGAIN then ignore and return msg="";
 		return;
 	}
-	msgSz = ntohs(static_cast<uint16_t> (len));//..if problem here
+	msgSz = ntohs(static_cast<uint16_t> (len));
+	//if problem with msgSz, then
+	//	emptySocket(fd);
 
 	while (msgSz) {
 		i = read(fd, c_msg, msgSz >= BUF_SZ ? BUF_SZ -1 : msgSz);
-		if (i == -1) { //..will read as much as possible here and discard
+		if (i == -1) {
 			std::cout << "error read msg\n";
 			msg.clear();
 			return;
@@ -82,6 +76,14 @@ void getSocketMsg(std::string& msg, int fd) {
 		msg += c_msg;
 		msgSz -= i;
 	}
+}
+
+void emptySocket(int fd) {
+//read this socket until it returns 0. Potentially several messages lost
+	char c_msg[BUF_SZ];
+	int i = 1;
+	while (i)
+		i = read(fd, c_msg, BUF_SZ);
 }
 
 void rearmFD(int epfd, int fd) {
