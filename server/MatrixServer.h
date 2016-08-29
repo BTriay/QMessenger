@@ -6,14 +6,17 @@
 #include <map>
 #include <pthread.h>
 
+#include "../parser.h"
 #include "UserServer.h"
 #include "RoomServer.h"
 
+#ifdef TEST_COUT
 #include <iostream>
+#endif
 
 class MatrixServer {
 	std::map<int, UserServer*> a_socketUser; //int is the socket of the user
-	std::map<std::string, int> a_nameUser; //string is username, int is socket
+	std::map<std::string, UserServer*> a_nameUser; //string is username
 	std::map<int, RoomServer*> a_rooms;
 	int a_nextAvailableRoom;
 
@@ -23,15 +26,25 @@ public:
 	MatrixServer();
 	~MatrixServer();
 
-	void createUser(int const socket, std::string const name);
-	void addOnlineFriends(int const socket, std::vector<std::string>& friends);
+	void createUser(int socket, const std::string& name);
 	void rmUser(int socket);
+	bool userLogged(int socket) const;
+	void addOnlineFriends(int socket, std::vector<std::string>& friends);
+	std::string getUsername(int socket);
 
-	int createRoom(std::vector<int>& users); //returns the room no
-	void addUserToRoom(int roomNo, int socket);
-	void rmUserFromRoom(int roomNo, int socket); //if last user leaves room, delete the room
-	void sendMsg(int roomNo, std::string& msg);
+	void updateUserPresence(int socket, int presence);
+	void sendUserPresence(int socket); //to all her friends
+	void offlineUser(int socket, const std::vector<std::string>& friends); //when people are not friends anymore, tells them the socket user is offline
+	void recFriendsPresence(int socket); //of all her friends to her
+	void newFriendsRequests(int socket, std::vector<std::string>& friends);
+	void newFriendsRequests(std::string username, std::vector<std::string>& friends);
+	void unknownFriendName(int socket, const std::string& token);
 
+	void createRoom(int socket, std::vector<std::string>& tokens);
+	void addUsersToRoom(int roomNo, std::vector<std::string>& tokens, bool newRoom);
+	void rmUserFromRoom(int socket, int roomNo); //if last user leaves room, delete the room
+	void msgToRoom(int socket, std::vector<std::string>& tokens);
+	void sendConfirmedFriends(int socket, const std::vector<std::string>& tokens);
 };
 
 #endif

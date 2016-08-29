@@ -1,6 +1,7 @@
 #include "main.h"
 
 int main() {
+	daemon(1,0);
 	Bundle serverData;
 	bundleInit(serverData);
 	threadsLaunch(serverData);
@@ -11,32 +12,43 @@ int main() {
 }
 
 void bundleInit(Bundle& serverData) {
-	std::vector<std::string> configTokens;
-	std::vector<std::string>::iterator it;
-	if (!configFileReader("config", configTokens))
-		std::cout << "no config file, error\n";
+	bool conf_threads = false;
+	bool conf_port = false;
+	bool conf_db = false;
 
-	for (it = configTokens.begin(); it != configTokens.end(); it++) {
-		if (*it == CONFIG_DB) {
-			it++;
-			std::ifstream f((*it).c_str(), std::ios_base::in);
-			serverData.db = new Db(*it, !f.good());
-		}
-		else if (*it == CONFIG_THREADS) {
-			it++;
-			serverData.threadNo = stoi(*it);
-		}
-		else if (*it == CONFIG_PORT) {
-			it++;
-			serverData.portNo = *it;
+	std::vector<std::string> configTokens;
+	if (configFileReader("config", configTokens)) {
+		for (std::vector<std::string>::iterator it = configTokens.begin(); it != configTokens.end(); it++) {
+			if (*it == CONFIG_DB) {
+				it++;
+				std::ifstream f((*it).c_str(), std::ios_base::in);
+				serverData.db = new Db(*it, !f.good());
+				conf_db = true;
+			}
+			else if (*it == CONFIG_THREADS) {
+				it++;
+				serverData.threadNo = stoi(*it);
+				conf_threads = true;
+			}
+			else if (*it == CONFIG_PORT) {
+				it++;
+				serverData.portNo = *it;
+				conf_port = true;
+			}
 		}
 	}
+//if config file does not exist or is missing some info, use default configuration
+	if (!conf_threads)
+		serverData.threadNo = CONFIG_THREADS_DEF;
+	if (!conf_port)
+		serverData.portNo = CONFIG_PORT_DEF;
+	if (!conf_db) {
+		std::ifstream f(CONFIG_DB_DEF, std::ios_base::in);
+		serverData.db = new Db(CONFIG_DB_DEF, !f.good());
+	}
+
 	serverData.matrix = new MatrixServer();
 	serverData.epfd = epoll_create1(0);
-	if (serverData.epfd == -1) {
-		std::cout << "error creating epoll\n";
-		return;
-	}
 }
 
 void bundleClean(Bundle& serverData) {
@@ -45,11 +57,7 @@ void bundleClean(Bundle& serverData) {
 }
 
 void threadsLaunch(Bundle& serverData) {
-	int s;
 	std::vector<pthread_t> threads(serverData.threadNo);
-	for (int i = 0; i < serverData.threadNo; i++) {
-		s = pthread_create(&threads[i], NULL, threadStart, (void *) (&serverData));
-		if (s != 0)
-			std::cout << "error thread creation\n";
-	}
+	for (int i = 0; i < serverData.threadNo; i++)
+		pthread_create(&threads[i], NULL, threadStart, (void *) (&serverData));
 }

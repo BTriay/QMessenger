@@ -8,7 +8,9 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 
+#ifdef TEST_COUT
 #include <iostream>
+#endif
 
 #define BACKLOG				10
 

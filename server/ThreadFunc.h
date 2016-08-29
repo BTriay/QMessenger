@@ -6,43 +6,41 @@
 #include <fstream>
 #include <pthread.h>
 #include <sys/epoll.h>
+#include <cstdint>
 
 #include "../parser.h"
 #include "Db.h"
 #include "MatrixServer.h"
 #include "Bundle.h"
 
-#define 	RM_USER		0
+#define 	USER_HANGUP	0
 
 class ThreadFunc {
 	Db* a_db;
 	MatrixServer* a_matrix;
 	int a_epfd;
 
-	void rmUser(int fd);
-	void roomMsg(int fd, std::vector<std::string>& msgTokens);
-	void presenceUpdate(int fd, std::vector<std::string>& msgTokens);
-	void newRoom(std::vector<std::string>& msgTokens);
-	void inviteToRoom(std::vector<std::string>& msgTokens);
-	void leaveRoom(int fd, std::vector<std::string>& msgTokens);
-	void beMyFriend(int fd, std::vector<std::string>& msgTokens);
-	void weAreFriends(int fd, std::vector<std::string>& msgTokens);
-	void weAreNotFriends(int fd, std::vector<std::string>& msgTokens);
-	void hello(int fd, std::vector<std::string>& msgTokens);
-	void newUser(int fd, std::vector<std::string>& msgTokens);
-	void deleteMe(int fd);
+	void inviteToRoom(std::vector<std::string>& tokens);
+	void beMyFriend(int socket, const std::string& token);
+	void weAreFriends(int socket, const std::vector<std::string>& tokens);
+	void weAreNotFriends(int socket, const std::vector<std::string>& tokens);
+	void friendsList(int socket);
+	void newConnect(int socket, std::vector<std::string>& tokens, int identifier);
+	void udpateOnlineFriends(int socket);
+	void deleteMe(int socket);
+	void confirmPotentialFriends(int socket);
+	void confirmPotentialFriends(std::string username);
+	std::string getUsername(int socket) const;
 
 public:
 	ThreadFunc(Bundle* bundle);
 	~ThreadFunc() {} //destructor should NOT destroy the matrix / db !
-	int operator()(int parserDef, int fd, std::vector<std::string>& msgTokens);
+	void operator()(int parserDef, int socket, std::vector<std::string>& tokens);
 	int epfd() const { return a_epfd; }
 
 };
 
 void* threadStart(void *arg);
-void getSocketMsg(std::string& msg, int fd);
-void rearmFD(int epfd, int fd);
-void emptySocket(int fd);
+void rearmFD(int epfd, int socket);
 
 #endif

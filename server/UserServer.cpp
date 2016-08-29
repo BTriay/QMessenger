@@ -1,64 +1,39 @@
 #include "UserServer.h"
 
-UserServer::UserServer(int socket, std::string name): User(name), a_socket{socket} {
-	int s = pthread_mutex_init(&mtxUser, NULL);
-	if (s != 0)
-		std::cout << "serverUser mutex init problem\n";
-
-	std::cout << "serverUser constructor\n";
+UserServer::UserServer(int socket, const std::string& name): User(name), a_socket{socket} {
+	int i = pthread_mutex_init(&mtxUser, NULL);
 }
 
 UserServer::~UserServer() {
-//	User::~User();
-	int s = pthread_mutex_destroy(&mtxUser);
-	if (s != 0)
-		std::cout << "serverUser mutex destroy problem\n";
-
-	std::cout << "serverUser destructor for " << this->getUsername() << std::endl;
-	std::cout << "closing socket\n";
+	int i = pthread_mutex_destroy(&mtxUser);
+	close(a_socket);
 }
 
-void UserServer::addOnlineFriend(int socket) {
-	int s;
-	s = pthread_mutex_lock(&mtxUser);
-	if (s != 0)
-		std::cout << "mutex lock pb\n";
-
-	a_onlineFriends.push_back(socket);
-
-	s = pthread_mutex_unlock(&mtxUser);
-	if (s != 0)
-		std::cout << "mutex unlock pb\n";
+void UserServer::addOnlineFriend(UserServer* u) {
+	pthread_mutex_lock(&mtxUser);
+	a_onlineFriends.push_back(u);
+	pthread_mutex_unlock(&mtxUser);
 }
 
-void UserServer::getOnlineFriend(std::vector<int>& sockets) const {
-	sockets = a_onlineFriends;
+void UserServer::getOnlineFriends(std::vector<UserServer*>& users) const {
+	users = a_onlineFriends;
 }
 
-void UserServer::offlineFriend(int socket) {
-	int s;
-	std::vector<int>::iterator it;
-	bool found = false;
+void UserServer::offlineFriend(UserServer* u) {
+	pthread_mutex_lock(&mtxUser);
+	std::vector<UserServer*>::iterator it = std::find(a_onlineFriends.begin(), a_onlineFriends.end(), u);
+	if ( it != a_onlineFriends.end() )
+		a_onlineFriends.erase(it);
+	pthread_mutex_unlock(&mtxUser);
+}
 
-	s = pthread_mutex_lock(&mtxUser);
-	if (s != 0)
-		std::cout << "mutex lock pb\n";
-
-	it = a_onlineFriends.begin();
-	while (it != a_onlineFriends.end() && !found) {
-		if (*it == socket) {
-			a_onlineFriends.erase(it);
-			found = true;
-		}
-		it++;
+void UserServer::sendMsg(const char* msg, size_t sz) {
+	size_t j = 0;
+	pthread_mutex_lock(&mtxUser);
+	while (size_t i = write(a_socket, msg + j, sz)) {
+		j += i;
+		sz -= i;
 	}
-
-	s = pthread_mutex_unlock(&mtxUser);
-	if (s != 0)
-		std::cout << "mutex unlock pb\n";
-}
-
-void UserServer::sendMsg(std::string msg) {
-	write(a_socket, msg.c_str(), msg.size());
+	pthread_mutex_unlock(&mtxUser);
 }
 

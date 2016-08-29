@@ -6,38 +6,50 @@
 #include <fstream>
 #include <sstream>
 #include <iterator>
+#ifdef TEST_COUT
 #include <iostream>
+#endif
 #include <stdlib.h>
-#include <arpa/inet.h>
 #include <string.h>
+#include <unistd.h>
 
-//message type identifier
-#define ROOM_MSG						1
-#define KEEPALIVE						2
-#define PRESENCE_UPDATE			3
-	#define ONLINE						30
-	#define AWAY							31
-	#define DO_NOT_DISTURB		32
-	#define OFFLINE						33
-#define NEW_ROOM						4
-#define INVITE_USER_TO_ROOM	5
-#define LEAVE_THE_ROOM			6
-#define BE_MY_FRIEND				7
-#define I_AM_YOUR_FRIEND		8
-#define WE_ARE_NOT_FRIENDS	9
-#define HELLO								10
-#define NEW_USER						11
-	#define USERNAME_OK				111
-	#define USERNAME_TAKEN		112
-#define DELETE_ME						12
+#ifdef __linux
+#include <arpa/inet.h>
+#elif _WIN32
+#include <winsock2.h>
+#endif
 
-//config file
-#define CONFIG_THREADS			"threadspool"
-#define CONFIG_DB						"db"
-#define CONFIG_PORT					"port"
+#include "parserConst.h"
 
-bool configFileReader(std::string const & filename, std::vector<std::string>& tokens);
-int msgParser(std::string const & msg, std::vector<std::string>& tokens);
-char* msgWriter(std::string& msg, std::vector<std::string>& tokens, int identifier, size_t* size);
+#define BUF_SZ			256
+
+#ifdef CLIENT
+    #include "Socket.h"
+    class Socket;
+#endif
+
+
+class MsgWriter {
+private:
+	char * a_buf;
+	size_t a_sz;
+public:
+    MsgWriter(const std::vector<std::string>& tokens, int identifier);
+    MsgWriter(const std::string& token, int identifier);
+    explicit MsgWriter(int identifier);
+	~MsgWriter();
+	char* getMsg() const { return a_buf; }
+	size_t getSz() const { return a_sz; }
+};
+
+bool configFileReader(const std::string& filename, std::vector<std::string>& tokens);
+int msgParser(const std::string& msg, std::vector<std::string>& tokens);
+void emptySocket(int socket);
+#ifdef SERVER
+void getSocketMsg(std::string& msg, int fd);
+#endif
+#ifdef CLIENT
+void getSocketMsg(std::string& msg, Socket* a_socket);
+#endif
 
 #endif

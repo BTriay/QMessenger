@@ -11,7 +11,9 @@ int serverInit(const char* port) {
 int ssocket() {
 	int sock;
 	if ( (sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+#ifdef TEST_COUT
 		std::cout << "error: socket\n";
+#endif
 		return -1;
 	}
 	return sock;
@@ -31,7 +33,9 @@ int sbind(const char* port) {
 		break;
 	}
 	if (p == NULL) {
+#ifdef TEST_COUT
 		std::cout << "error: bind\n";
+#endif
 		return -1;
 	}
 	return sock;
@@ -46,7 +50,9 @@ int getaddrinfoRes(struct addrinfo **res, const char* port) {
 	hints.ai_flags = AI_PASSIVE;
 
 	if (getaddrinfo(NULL, port, &hints, res) < 0) {
+#ifdef TEST_COUT
 		std::cout << "error: getaddrinfoRes\n";
+#endif
 		return -1;
 	}
 	return 0;
@@ -54,7 +60,7 @@ int getaddrinfoRes(struct addrinfo **res, const char* port) {
 
 int slisten(int sock) {
 	if (listen(sock, BACKLOG) < 0) {
-		std::cout << "error: listen\n";
+//		std::cout << "error: listen\n";
 		return -1;
 	}
 	return 0;
@@ -66,7 +72,10 @@ void s_accept(int sockfd, int epfd) {
 	int s;
 	while (true) {
 		if ( (new_sockfd = accept(sockfd, NULL, NULL)) < 0)
+#ifdef TEST_COUT
 			std::cout << "error: accept. Error: " << errno << std::endl;
+#endif
+			;
 		else
 			s = flags = fcntl(new_sockfd, F_GETFL);
 			flags |= O_NONBLOCK;
@@ -82,6 +91,8 @@ void epollList(int sock, int epfd) {
 	ev.data.fd = sock;
 
 	s = epoll_ctl(epfd, EPOLL_CTL_ADD , sock, &ev);
+#ifdef TEST_COUT
 	if (s < 0)
 		std::cout << "error: epoll_ctl\n";
+#endif
 }

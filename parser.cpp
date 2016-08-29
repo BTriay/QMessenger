@@ -1,6 +1,58 @@
 #include "parser.h"
 
-bool configFileReader(std::string const & filename, std::vector<std::string>& tokens) {
+MsgWriter::MsgWriter(const std::vector<std::string>& tokens, int identifier) {
+	std::string msg = std::to_string(identifier) + "\n";
+    for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
+		msg += *it + "\n";
+
+  uint16_t sz = msg.length();
+  uint16_t nsz = htons(sz);
+
+  a_sz = sz + sizeof(uint16_t);
+  a_buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+
+  memcpy(a_buf, &nsz, sizeof(uint16_t));
+  memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+ 	a_buf[sz + sizeof(uint16_t) + 1] = '\0';
+}
+
+MsgWriter::MsgWriter(const std::string& token, int identifier) {
+  std::string msg = std::to_string(identifier) + "\n" + token + "\n";
+
+  uint16_t sz = msg.length();
+  uint16_t nsz = htons(sz);
+
+  a_sz = sz + sizeof(uint16_t);
+  a_buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+
+  memcpy(a_buf, &nsz, sizeof(uint16_t));
+  memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+  a_buf[sz + sizeof(uint16_t) + 1] = '\0';
+}
+
+
+
+MsgWriter::MsgWriter(int identifier) {
+  std::string msg = std::to_string(identifier) + "\n";
+
+  uint16_t sz = msg.length();
+  uint16_t nsz = htons(sz);
+
+  a_sz = sz + sizeof(uint16_t);
+  a_buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+
+  memcpy(a_buf, &nsz, sizeof(uint16_t));
+  memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+  a_buf[sz + sizeof(uint16_t) + 1] = '\0';
+}
+
+
+
+MsgWriter::~MsgWriter() {
+	free(a_buf);
+}
+
+bool configFileReader(const std::string& filename, std::vector<std::string>& tokens) {
 	int i;
 	std::string line;
 	std::ifstream file(filename.c_str(), std::ios::in);
@@ -18,29 +70,63 @@ bool configFileReader(std::string const & filename, std::vector<std::string>& to
 		return false;
 }
 
-int msgParser(std::string const & msg, std::vector<std::string>& tokens) {
+int msgParser(const std::string& msg, std::vector<std::string>& tokens) {
 	std::stringstream s(msg, std::ios_base::in);
 	int i;
-	s >> i; //check that i is an int; if not, return -1
+	s >> i;
 	s.ignore();
+
 	std::string str;
 	while (getline(s, str))
 		tokens.push_back(str);
 	return i;
 }
 
-char* msgWriter(std::string& msg, std::vector<std::string>& tokens, int identifier, size_t* size) {
-	std::vector<std::string>::iterator it;
-	msg += std::to_string(identifier) + "\n";
-	for (it = tokens.begin(); it != tokens.end(); it++)
-		msg+= *it + "\n";
+#ifdef SERVER
+void getSocketMsg(std::string& msg, int fd) {
+#endif
+#ifdef CLIENT
+void getSocketMsg(std::string& msg, Socket* a_socket) {
+#endif
+    char c_msg[BUF_SZ];
+    uint16_t len;
+    size_t msgSz;
+    int i = 0;
 
-    uint16_t sz = msg.length();
-    uint16_t nsz = htons(sz);
-    *size = sz + sizeof(uint16_t);
-    char* buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
-    memcpy(buf, &nsz, sizeof(uint16_t));
-    memcpy(buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
-    buf[sz + sizeof(uint16_t) + 1] = '\0';
-	return buf;	
+#ifdef SERVER
+//http://stackoverflow.com/questions/666601/what-is-the-correct-way-of-reading-from-a-tcp-socket-in-c-c
+    read(fd, &len, sizeof(uint16_t));
+#endif
+#ifdef CLIENT
+    if (!a_socket->getMsgSz(&len))
+        return;
+#endif
+
+    msgSz = ntohs(static_cast<uint16_t> (len));
+
+    while (msgSz) {
+#ifdef SERVER
+        i = read(fd, c_msg, msgSz >= BUF_SZ ? BUF_SZ -1 : msgSz);
+#endif
+#ifdef CLIENT
+        i = a_socket->getMsg(c_msg, msgSz >= BUF_SZ ? BUF_SZ -1 : msgSz);
+#endif
+        if (i == -1) {
+            msg.clear();
+            return;
+        }
+        c_msg[i] = '\0';
+        msg += c_msg;
+        msgSz -= i;
+    }
 }
+
+#ifdef SERVER
+//read this socket until it returns 0. Potentially several messages lost
+void emptySocket(int fd) {
+    char c_msg[BUF_SZ];
+    int i = 1;
+    while (i <= UINT16_MAX)
+        i = read(fd, c_msg, BUF_SZ);
+}
+#endif

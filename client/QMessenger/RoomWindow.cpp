@@ -1,6 +1,8 @@
 #include "RoomWindow.h"
 
-RoomWindow::RoomWindow() : QWidget() {
+/* ************************************ PUBLIC ************************************ */
+RoomWindow::RoomWindow(int roomNo, Socket* socket, Matrix* matrix) : QWidget(), a_roomNo{roomNo},
+a_socket{socket}, a_matrix{matrix} {
 
     setWindowTitle("QMessenger");
 //Upper layout
@@ -10,14 +12,12 @@ RoomWindow::RoomWindow() : QWidget() {
     a_lwUsers = new QListWidget();
 
     a_pbExit = new QPushButton("E&xit");
-    a_pbKickOut = new QPushButton("&Kick out a user");
     a_pbInviteUser = new QPushButton("&Invite a user");
 
     a_vLayoutUpperRight = new QVBoxLayout();
 
     a_hLayoutBtns = new QHBoxLayout();
     a_hLayoutBtns->addWidget(a_pbInviteUser);
-    a_hLayoutBtns->addWidget(a_pbKickOut);
     a_hLayoutBtns->addWidget(a_pbExit);
     a_hLayoutBtns->setAlignment(Qt::AlignHCenter);
 
@@ -42,21 +42,80 @@ RoomWindow::RoomWindow() : QWidget() {
     a_layoutMain->addLayout(a_hLayoutLower);
 
     this->setLayout(a_layoutMain);
+    this->show();
 
-    QObject::connect(a_pbExit, SIGNAL(clicked()), qApp, SLOT(quit()));
-    QObject::connect(a_pbSend, SIGNAL(clicked()), this, SLOT(sendMsg()));
+    connect(a_pbExit, SIGNAL(clicked()), this, SLOT(hide()));
+    connect(a_pbExit, SIGNAL(clicked()), this, SLOT(slot_rw_quitRoom()));
+    connect(this, SIGNAL(sig_rw_quitRoom(int)), a_matrix, SLOT(slot_mx_quitRoom(int)));
+    connect(a_pbSend, SIGNAL(clicked()), this, SLOT(slot_rw_sendMsg()));
+    connect(this, SIGNAL(sig_rw_sendMsg(int, const std::string&)), a_matrix,
+SLOT(slot_mx_sendRoomMsg(int, const std::string&)));
+    connect(a_pbInviteUser, SIGNAL(clicked()), this, SLOT(slot_rw_inviteUsers()));
+    connect(this, SIGNAL(sig_rw_inviteUsers(int, const std::vector<std::string>&)), a_matrix, SLOT(slot_mx_inviteUser(int, const std::vector<std::string>&)));
 }
 
-void RoomWindow::sendMsg() {
-/*
-    uint16_t sz = a_leMsg->text().toStdString().length();
-    uint16_t nsz = htons(sz);
-    char buf[200];
-    memcpy(buf, &nsz, sizeof(uint16_t));
-    memcpy(buf+sizeof(uint16_t), a_leMsg->text().toStdString().c_str(), sz);
-    buf[sz + sizeof(uint16_t)] = '\0';
-    int s = a_socket->write( (const char*) &buf, sz+sizeof(uint16_t));
-    if (s==-1)
-        qDebug() << "socket write error";
-        */
+void RoomWindow::addUser(const std::string& username, bool justJoined) {
+    if (justJoined) {
+        std::string newJoiner = username + " joined the room";
+        a_tePrevMsg->append(QString{newJoiner.c_str()});
+    }
+    a_users.push_back(username);
+    a_lwUsers->addItem(QString{username.c_str()});
+    a_lwUsers->sortItems(Qt::AscendingOrder);
 }
+
+void RoomWindow::rmUser(const std::string& username) {
+    std::string leaver = username + " left the room";
+    a_tePrevMsg->append(QString{leaver.c_str()});
+    for (std::vector<std::string>::iterator it = a_users.begin(); it != a_users.end(); it++) {
+        if (*it == username) {
+            a_users.erase(it);
+            break;
+        }
+    }
+    if (a_users.size() == 1) {
+        a_pbSend->setEnabled(false);
+        a_pbInviteUser->setEnabled(false);
+    }
+    QList<QListWidgetItem*> l = a_lwUsers->findItems(QString{username.c_str()}, Qt::MatchExactly);
+    a_lwUsers->takeItem(a_lwUsers->row(l[0]));
+}
+
+void RoomWindow::publishMsg(const std::vector<std::string>& tokens) {
+    QString gmsg = "<b>" + QString{tokens[2].c_str()} + "</b>: ";
+    a_tePrevMsg->append(gmsg);
+    for (std::vector<std::string>::const_iterator it = tokens.begin() + 3; it != tokens.end(); it++)
+        a_tePrevMsg->append(QString{it->c_str()});
+}
+
+void RoomWindow::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+        slot_rw_sendMsg();
+    if (event->key() == Qt::Key_Escape)
+        a_pbExit->click();
+}
+/* ************************************ END OF PUBLIC ************************************ */
+
+/* ************************************ SLOTS ************************************ */
+void RoomWindow::slot_rw_sendMsg() {
+    emit sig_rw_sendMsg(a_roomNo, a_leMsg->text().toStdString());
+    a_leMsg->clear();
+}
+
+void RoomWindow::slot_rw_quitRoom() {
+    emit sig_rw_quitRoom(a_roomNo);
+}
+
+void RoomWindow::slot_rw_inviteUsers() {
+    std::vector<std::string> usernames;
+    a_matrix->getUsernames(usernames);
+    a_joinRoom = new JoinRoom(this, usernames);
+    a_joinRoom->show();
+}
+
+void RoomWindow::slot_rw_inviteUsers(const std::vector<std::string>& invitees) {
+    emit sig_rw_inviteUsers(a_roomNo, invitees);
+    delete a_joinRoom;
+    a_joinRoom = nullptr;
+}
+/* ************************************ END OF SLOTS ************************************ */

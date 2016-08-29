@@ -1,13 +1,16 @@
 QMessenger
 
-* IM with a private server
-* Uses sqlite to keep the users' circles
-* Client interface in Qt
+This code is based on my work done for my project of the master Computing & Information Systems at Queen Mary University, London.
 
+This is a complete instant messenger software, with a Linux server and cross-platform client. It uses sqlite for cold storage. The client interface was developped in Qt Creator.
+
+No installation is required for the server, simply launch it and it will automatically create its own database and become a daemon. Use the makefile to compile it on distribution (Linux only: the code uses the epoll() function).
+Use Qt Creator to compile the client on Linux or Windows. This should be portable to OS X: you will need to include the correct header definition & library #include in the ConnectionWindow.h and parser.h files, so that the htons() and ntohs() function are declared.
 
 Folders are organized as:
-./client
+./client/QMessenger
 ./server
 ./sqlite-amalgamation
-	Download and extract here the sqlite amalgation files from:
+	Get the files to put in this last folder from the sqlite official website:
 	https://www.sqlite.org/download.html
+	sqlite-amalgamation-3140100.zip
