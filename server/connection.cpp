@@ -71,16 +71,18 @@ void s_accept(int sockfd, int epfd) {
 	int flags;
 	int s;
 	while (true) {
-		if ( (new_sockfd = accept(sockfd, NULL, NULL)) < 0)
+		if ( (new_sockfd = accept(sockfd, NULL, NULL)) < 0) {
 #ifdef TEST_COUT
 			std::cout << "error: accept. Error: " << errno << std::endl;
 #endif
 			;
-		else
+		}
+		else {
 			s = flags = fcntl(new_sockfd, F_GETFL);
 			flags |= O_NONBLOCK;
 			fcntl(new_sockfd, F_SETFL, flags);
 			epollList(new_sockfd, epfd);
+		}
 	}
 }
 
