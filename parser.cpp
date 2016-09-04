@@ -2,18 +2,17 @@
 
 MsgWriter::MsgWriter(const std::vector<std::string>& tokens, int identifier) {
 	std::string msg = std::to_string(identifier) + "\n";
-    for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
+  for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
 		msg += *it + "\n";
 
   uint16_t sz = msg.length();
   uint16_t nsz = htons(sz);
 
   a_sz = sz + sizeof(uint16_t);
-  a_buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+  a_buf = reinterpret_cast<char*> (malloc(a_sz));
 
   memcpy(a_buf, &nsz, sizeof(uint16_t));
   memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
- 	a_buf[sz + sizeof(uint16_t) + 1] = '\0';
 }
 
 MsgWriter::MsgWriter(const std::string& token, int identifier) {
@@ -23,14 +22,11 @@ MsgWriter::MsgWriter(const std::string& token, int identifier) {
   uint16_t nsz = htons(sz);
 
   a_sz = sz + sizeof(uint16_t);
-  a_buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+  a_buf = reinterpret_cast<char*> (malloc(a_sz));
 
   memcpy(a_buf, &nsz, sizeof(uint16_t));
   memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
-  a_buf[sz + sizeof(uint16_t) + 1] = '\0';
 }
-
-
 
 MsgWriter::MsgWriter(int identifier) {
   std::string msg = std::to_string(identifier) + "\n";
@@ -39,14 +35,11 @@ MsgWriter::MsgWriter(int identifier) {
   uint16_t nsz = htons(sz);
 
   a_sz = sz + sizeof(uint16_t);
-  a_buf = reinterpret_cast<char*> (malloc(sz + sizeof(uint16_t) + (size_t)1));
+  a_buf = reinterpret_cast<char*> (malloc(a_sz));
 
   memcpy(a_buf, &nsz, sizeof(uint16_t));
   memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
-  a_buf[sz + sizeof(uint16_t) + 1] = '\0';
 }
-
-
 
 MsgWriter::~MsgWriter() {
 	free(a_buf);
@@ -94,7 +87,6 @@ void getSocketMsg(std::string& msg, Socket* a_socket) {
     int i = 0;
 
 #ifdef SERVER
-//http://stackoverflow.com/questions/666601/what-is-the-correct-way-of-reading-from-a-tcp-socket-in-c-c
     read(fd, &len, sizeof(uint16_t));
 #endif
 #ifdef CLIENT
