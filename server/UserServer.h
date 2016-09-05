@@ -5,8 +5,11 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <algorithm>
+#include <sys/socket.h>
 
+#ifdef TEST_COUT
 #include <iostream>
+#endif
 
 class UserServer : public User {
 	int a_socket;

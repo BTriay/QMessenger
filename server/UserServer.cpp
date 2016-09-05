@@ -30,7 +30,7 @@ void UserServer::offlineFriend(UserServer* u) {
 void UserServer::sendMsg(const char* msg, size_t sz) {
 	size_t j = 0;
 	pthread_mutex_lock(&mtxUser);
-	while (size_t i = write(a_socket, msg + j, sz)) {
+	while (size_t i = send(a_socket, msg + j, sz, MSG_NOSIGNAL)) {
 		j += i;
 		sz -= i;
 	}
