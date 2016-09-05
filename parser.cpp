@@ -12,7 +12,7 @@ MsgWriter::MsgWriter(const std::vector<std::string>& tokens, int identifier) {
   a_buf = reinterpret_cast<char*> (malloc(a_sz));
 
   memcpy(a_buf, &nsz, sizeof(uint16_t));
-  memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
 }
 
 MsgWriter::MsgWriter(const std::string& token, int identifier) {
@@ -25,7 +25,7 @@ MsgWriter::MsgWriter(const std::string& token, int identifier) {
   a_buf = reinterpret_cast<char*> (malloc(a_sz));
 
   memcpy(a_buf, &nsz, sizeof(uint16_t));
-  memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
 }
 
 MsgWriter::MsgWriter(int identifier) {
@@ -38,7 +38,7 @@ MsgWriter::MsgWriter(int identifier) {
   a_buf = reinterpret_cast<char*> (malloc(a_sz));
 
   memcpy(a_buf, &nsz, sizeof(uint16_t));
-  memcpy(a_buf+sizeof(uint16_t), msg.c_str(), sz + sizeof(uint16_t));
+  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
 }
 
 MsgWriter::~MsgWriter() {
