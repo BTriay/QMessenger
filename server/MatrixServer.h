@@ -28,7 +28,8 @@ public:
 
 	void createUser(int socket, const std::string& name);
 	void rmUser(int socket);
-	bool userLogged(int socket) const;
+	bool userCreated(int socket) const;
+	bool userLogged(const std::string& username) const;
 	void addOnlineFriends(int socket, std::vector<std::string>& friends);
 	std::string getUsername(int socket);
 

@@ -52,9 +52,19 @@ std::cout << "user hangup\n";
 	pthread_mutex_unlock(&mtxMatrix);
 }
 
-bool MatrixServer::userLogged(int socket) const {
+bool MatrixServer::userCreated(int socket) const {
 	try {
 		UserServer* u = a_socketUser.at(socket);
+		return true;
+	}
+	catch (const std::out_of_range) {
+		return false;
+	}
+}
+
+bool MatrixServer::userLogged(const std::string& username) const {
+	try {
+		UserServer* u = a_nameUser.at(username);
 		return true;
 	}
 	catch (const std::out_of_range) {

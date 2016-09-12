@@ -26,6 +26,7 @@
     #define WRONG_PWD				1
     #define DONT_KNOW_YOU           2
     #define WELCOME_BACK            3
+		#define ALREADY_LOGGED					4
 #define NEW_USER				12
     #define USERNAME_OK             1
     #define USERNAME_TAKEN          2

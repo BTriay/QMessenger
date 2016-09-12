@@ -154,6 +154,10 @@ void ConnectionWindow::slot_cw_helloAnswer(int id) {
         a_lblMessage->setText("Incorrect password");
         emit sig_cw_identityCheck(false);
     }
+    else if (id == ALREADY_LOGGED) {
+        a_lblMessage->setText("User already logged in");
+        emit sig_cw_identityCheck(false);
+    }
     else if (id == WELCOME_BACK) {
         a_lblMessage->setText("Welcome back");
         emit sig_cw_identityCheck(true);

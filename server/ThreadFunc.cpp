@@ -18,7 +18,7 @@ void ThreadFunc::operator() (int parserDef, int socket, std::vector<std::string>
 			return;
 	}
 
-	if (!a_matrix->userLogged(socket)) {
+	if (!a_matrix->userCreated(socket)) {
 #ifdef TEST_COUT
 		std::cout << "user not logged in, exit\n";
 #endif
@@ -134,17 +134,21 @@ void ThreadFunc::newConnect(int socket, std::vector<std::string>& tokens, int id
 	}
 
 	if (identifier == HELLO) {
-		std::string hash; // == clear password until cryptographic functions are in
-		std::string salt; //is not used for now, and should be empty
-		a_db->getCredentials(username, hash, salt);
+		if (a_matrix->userLogged(username))
+			replyMsg.push_back(std::to_string(ALREADY_LOGGED));
+		else {
+			std::string hash; // == clear password until cryptographic functions are in
+			std::string salt; //is not used for now, and should be empty
+			a_db->getCredentials(username, hash, salt);
 
-		if (hash.empty())
-			replyMsg.push_back(std::to_string(DONT_KNOW_YOU));
-		else if (password != hash)
-			replyMsg.push_back(std::to_string(WRONG_PWD));
-		if (replyMsg.empty()) {
-			replyMsg.push_back(std::to_string(WELCOME_BACK));
-			valid = true;
+			if (hash.empty())
+				replyMsg.push_back(std::to_string(DONT_KNOW_YOU));
+			else if (password != hash)
+				replyMsg.push_back(std::to_string(WRONG_PWD));
+			if (replyMsg.empty()) {
+				replyMsg.push_back(std::to_string(WELCOME_BACK));
+				valid = true;
+			}
 		}
 	}
 	else if (identifier == NEW_USER) {

@@ -61,11 +61,12 @@ MainWindow::MainWindow() : QWidget () {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
         if (a_identified)
             slot_mw_launchRoomRequest();
         else
             slot_mw_connectionWdwInit();
+    }
     if (event->key() == Qt::Key_Escape)
         qApp->quit();
 }
