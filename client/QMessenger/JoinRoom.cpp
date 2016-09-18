@@ -41,6 +41,7 @@ void JoinRoom::slot_jr_invite() {
         for (int i=0; i < l.count(); i++)
             invitees.push_back(l.at(i)->text().toStdString());
         emit sig_jr_inviteThem(invitees);
+        this->close();
     }
 }
 /* ************************************ END OF SLOTS ************************************ */

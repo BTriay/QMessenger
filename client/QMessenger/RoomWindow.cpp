@@ -41,6 +41,7 @@ a_socket{socket}, a_matrix{matrix} {
     a_layoutMain->addLayout(a_hLayoutUpper);
     a_layoutMain->addLayout(a_hLayoutLower);
 
+    a_joinRoom = nullptr;
     this->setLayout(a_layoutMain);
     this->show();
 
@@ -78,7 +79,8 @@ void RoomWindow::rmUser(const std::string& username) {
         a_pbInviteUser->setEnabled(false);
     }
     QList<QListWidgetItem*> l = a_lwUsers->findItems(QString{username.c_str()}, Qt::MatchExactly);
-    a_lwUsers->takeItem(a_lwUsers->row(l[0]));
+    if (l.size())
+        a_lwUsers->takeItem(a_lwUsers->row(l[0]));
 }
 
 void RoomWindow::publishMsg(const std::vector<std::string>& tokens) {
@@ -115,7 +117,5 @@ void RoomWindow::slot_rw_inviteUsers() {
 
 void RoomWindow::slot_rw_inviteUsers(const std::vector<std::string>& invitees) {
     emit sig_rw_inviteUsers(a_roomNo, invitees);
-    delete a_joinRoom;
-    a_joinRoom = nullptr;
 }
 /* ************************************ END OF SLOTS ************************************ */
