@@ -200,9 +200,11 @@ void MatrixServer::addUsersToRoom(int roomNo, std::vector<std::string>& tokens, 
 			u = nullptr;
 		}
 		if (u != nullptr) {
-			r->addUser(u);
-			if (!newRoom)
-				r->sendNewJoinerName(u);
+			if (!r->userInRoom(u)) {
+				r->addUser(u);
+				if (!newRoom)
+					r->sendNewJoinerName(u);
+			}
 		}
 	}
 	if (newRoom)

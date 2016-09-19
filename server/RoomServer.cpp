@@ -37,6 +37,19 @@ int RoomServer::rmUser(UserServer* u) {
 	return a_users.size();
 }
 
+bool RoomServer::userInRoom(const UserServer* u) {
+	if (std::find(a_users.begin(), a_users.end(), u) == a_users.end())
+		return false;
+	return true;
+/*
+	std::string name = u->getUsername();
+	for (std::vector<UserServer*>::iterator it = a_users.begin(), it != a_users.end(), it++)
+		if (name == it->getUsername())
+			return true;
+	return false;
+*/
+}
+
 void RoomServer::sendMsg(const std::vector<std::string>& tokens) {
 	MsgWriter mw(tokens, ROOM_MSG);
 	for (std::vector<UserServer*>::iterator it = a_users.begin(); it != a_users.end(); it++)

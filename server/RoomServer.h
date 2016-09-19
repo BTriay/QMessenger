@@ -20,6 +20,7 @@ public:
 	void addUser(UserServer* u);
 	void addUser(std::vector<UserServer*> users);
 	int rmUser(UserServer* u);
+	bool userInRoom(const UserServer* u);
 	void sendMsg(const std::vector<std::string>& tokens);
 	void getUsersName(std::vector<std::string>& users) const;
 	void roomUsers(std::vector<std::string>& tokens);
