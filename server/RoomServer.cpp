@@ -43,13 +43,24 @@ void RoomServer::sendMsg(const std::vector<std::string>& tokens) {
 		(*it)->sendMsg(mw.getMsg(), mw.getSz());
 }
 
-void RoomServer::sendUsersName() {
-	std::vector<std::string> tokens;
+void RoomServer::roomUsers(std::vector<std::string>& tokens) {
 	tokens.push_back(std::to_string(a_roomNo));
 	tokens.push_back(std::to_string(ROOM_USERS));
 	std::vector<std::string> users;
 	getUsersName(users);
 	std::copy(users.begin(), users.end(), std::back_insert_iterator< std::vector<std::string> > (tokens));
+}
+
+void RoomServer::sendUsersName(UserServer* u) {
+	std::vector<std::string> tokens;
+	roomUsers(tokens);
+	MsgWriter mw(tokens, ROOM_MSG);
+	u->sendMsg(mw.getMsg(), mw.getSz());
+}
+
+void RoomServer::sendUsersName() {
+	std::vector<std::string> tokens;
+	roomUsers(tokens);
 	this->sendMsg(tokens);
 }
 
@@ -59,4 +70,5 @@ void RoomServer::sendNewJoinerName(UserServer* u) {
 	tokens.push_back(std::to_string(NEW_JOINER));
 	tokens.push_back(u->getUsername());
 	this->sendMsg(tokens);
+	this->sendUsersName(u);
 }

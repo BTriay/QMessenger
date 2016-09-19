@@ -35,7 +35,7 @@ class ThreadFunc {
 public:
 	ThreadFunc(Bundle* bundle);
 	~ThreadFunc() {} //destructor should NOT destroy the matrix / db !
-	void operator()(int parserDef, int socket, std::vector<std::string>& tokens);
+	void operator()(int identifier, int socket, std::vector<std::string>& tokens);
 	int epfd() const { return a_epfd; }
 
 };

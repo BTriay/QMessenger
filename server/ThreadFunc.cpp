@@ -7,14 +7,14 @@ ThreadFunc::ThreadFunc(Bundle* bundle) {
 	a_epfd = bundle->epfd;
 }
 
-void ThreadFunc::operator() (int parserDef, int socket, std::vector<std::string>& tokens) {
-	switch (parserDef) {
+void ThreadFunc::operator() (int identifier, int socket, std::vector<std::string>& tokens) {
+	switch (identifier) {
 		case USER_HANGUP:
 			a_matrix->rmUser(socket);
 			return;
 		case HELLO:
 		case NEW_USER:
-			newConnect(socket, tokens, parserDef);
+			newConnect(socket, tokens, identifier);
 			return;
 	}
 
@@ -25,7 +25,7 @@ void ThreadFunc::operator() (int parserDef, int socket, std::vector<std::string>
 		return;
 	}
 
-	switch (parserDef) {
+	switch (identifier) {
 		case ROOM_MSG:
 			a_matrix->msgToRoom(socket, tokens);
 			return;

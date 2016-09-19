@@ -56,6 +56,9 @@ SLOT(slot_mx_sendRoomMsg(int, const std::string&)));
 }
 
 void RoomWindow::addUser(const std::string& username, bool justJoined) {
+    for (std::vector<std::string>::iterator it = a_users.begin(); it != a_users.end(); it++)
+        if (*it == username)
+            return;
     if (justJoined) {
         std::string newJoiner = username + " joined the room";
         a_tePrevMsg->append(QString{newJoiner.c_str()});

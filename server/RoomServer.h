@@ -22,7 +22,9 @@ public:
 	int rmUser(UserServer* u);
 	void sendMsg(const std::vector<std::string>& tokens);
 	void getUsersName(std::vector<std::string>& users) const;
+	void roomUsers(std::vector<std::string>& tokens);
 	void sendNewJoinerName(UserServer* u);
+	void sendUsersName(UserServer* u);
 	void sendUsersName();
 };
 
