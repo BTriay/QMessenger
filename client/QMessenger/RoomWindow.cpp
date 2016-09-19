@@ -56,9 +56,8 @@ SLOT(slot_mx_sendRoomMsg(int, const std::string&)));
 }
 
 void RoomWindow::addUser(const std::string& username, bool justJoined) {
-    for (std::vector<std::string>::iterator it = a_users.begin(); it != a_users.end(); it++)
-        if (*it == username)
-            return;
+    if (std::find(a_users.begin(), a_users.end(), username) != a_users.end())
+        return;
     if (justJoined) {
         std::string newJoiner = username + " joined the room";
         a_tePrevMsg->append(QString{newJoiner.c_str()});
@@ -114,6 +113,12 @@ void RoomWindow::slot_rw_quitRoom() {
 void RoomWindow::slot_rw_inviteUsers() {
     std::vector<std::string> usernames;
     a_matrix->getUsernames(usernames);
+    for (std::vector<std::string>::iterator uit = a_users.begin(); uit != a_users.end(); uit++) {
+        std::vector<std::string>::iterator it;
+        it = std::find(usernames.begin(), usernames.end(), *uit);
+        if(it != usernames.end())
+            usernames.erase(it);
+    }
     a_joinRoom = new JoinRoom(this, usernames);
     a_joinRoom->show();
 }
