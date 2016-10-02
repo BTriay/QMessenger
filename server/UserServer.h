@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <sys/socket.h>
 
+#include "Locker.h"
+
 #ifdef TEST_COUT
 #include <iostream>
 #endif

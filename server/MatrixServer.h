@@ -9,6 +9,7 @@
 #include "../parser.h"
 #include "UserServer.h"
 #include "RoomServer.h"
+#include "Locker.h"
 
 #ifdef TEST_COUT
 #include <iostream>

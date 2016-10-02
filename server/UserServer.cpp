@@ -10,9 +10,8 @@ UserServer::~UserServer() {
 }
 
 void UserServer::addOnlineFriend(UserServer* u) {
-	pthread_mutex_lock(&mtxUser);
+	Locker l(&mtxUser);
 	a_onlineFriends.push_back(u);
-	pthread_mutex_unlock(&mtxUser);
 }
 
 void UserServer::getOnlineFriends(std::vector<UserServer*>& users) const {
@@ -20,7 +19,7 @@ void UserServer::getOnlineFriends(std::vector<UserServer*>& users) const {
 }
 
 void UserServer::offlineFriend(UserServer* u) {
-	pthread_mutex_lock(&mtxUser);
+	Locker l(&mtxUser);
 	std::vector<UserServer*>::iterator it = std::find(a_onlineFriends.begin(), a_onlineFriends.end(), u);
 	if ( it != a_onlineFriends.end() )
 		a_onlineFriends.erase(it);
@@ -29,11 +28,10 @@ void UserServer::offlineFriend(UserServer* u) {
 
 void UserServer::sendMsg(const char* msg, size_t sz) {
 	size_t j = 0;
-	pthread_mutex_lock(&mtxUser);
+	Locker l(&mtxUser);
 	while (size_t i = send(a_socket, msg + j, sz, MSG_NOSIGNAL)) {
 		j += i;
 		sz -= i;
 	}
-	pthread_mutex_unlock(&mtxUser);
 }
 

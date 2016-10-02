@@ -2,26 +2,25 @@
 
 MatrixServer::MatrixServer() {
 	a_nextAvailableRoom = 0;
-	int s = pthread_mutex_init(&mtxMatrix, NULL);
-#ifdef TEST_COUT
-	if (s != 0)
-		std::cout << "matrix mutex init problem\n";
-#endif
+	pthread_mutex_init(&mtxMatrix, NULL);
 }
 
 MatrixServer::~MatrixServer() {
-	int s = pthread_mutex_destroy(&mtxMatrix);
-#ifdef TEST_COUT
-	if (s != 0)
-		std::cout << "matrix mutex destroy problem\n";
-#endif
+	pthread_mutex_destroy(&mtxMatrix);
+
+	std::map<int, RoomServer*>::iterator itr;
+	for (itr = a_rooms.begin(); itr != a_rooms.end(); itr++)
+		delete itr->second;
+
+	std::map<int, UserServer*>::iterator itu;
+	for (itu = a_socketUser.begin(); itu != a_socketUser.end(); itu++)
+		delete itu->second;
 }
 
 void MatrixServer::createUser(int socket, const std::string& name) {
-	pthread_mutex_lock(&mtxMatrix);
+	Locker l(&mtxMatrix);
 	a_socketUser.insert(std::make_pair(socket, new UserServer(socket, name)));
 	a_nameUser[name] = a_socketUser[socket];
-	pthread_mutex_unlock(&mtxMatrix);
 }
 
 void MatrixServer::rmUser(int socket) {
@@ -45,11 +44,10 @@ std::cout << "user hangup\n";
 	for (std::map<int, RoomServer*>::iterator it = a_rooms.begin(); it != a_rooms.end(); it++)
 		it->second->rmUser(u);
 
-	pthread_mutex_lock(&mtxMatrix);
+	Locker l(&mtxMatrix);
 	a_nameUser.erase(u->getUsername());
 	delete(u);
 	a_socketUser.erase(socket);
-	pthread_mutex_unlock(&mtxMatrix);
 }
 
 bool MatrixServer::userCreated(int socket) const {
@@ -172,11 +170,13 @@ void MatrixServer::unknownFriendName(int socket, const std::string& token) {
 }
 
 void MatrixServer::createRoom(int socket, std::vector<std::string>& tokens) {
-	pthread_mutex_lock(&mtxMatrix);
-	int roomNo = a_nextAvailableRoom;
-	a_rooms.insert(std::make_pair(roomNo, new RoomServer(roomNo)));
-	++a_nextAvailableRoom;
-	pthread_mutex_unlock(&mtxMatrix);
+	int roomNo;
+	{
+		Locker l(&mtxMatrix);
+		roomNo = a_nextAvailableRoom;
+		a_rooms.insert(std::make_pair(roomNo, new RoomServer(roomNo)));
+		++a_nextAvailableRoom;
+	}
 
 	tokens.push_back(a_socketUser[socket]->getUsername());
 	addUsersToRoom(roomNo, tokens, true);
@@ -221,10 +221,9 @@ void MatrixServer::rmUserFromRoom(int socket, int roomNo) {
 	}
 	int i = r->rmUser(a_socketUser[socket]);
 	if (i <= 1) {
-		pthread_mutex_lock(&mtxMatrix);
+		Locker l(&mtxMatrix);
 		delete r;
 		a_rooms.erase(roomNo);
-		pthread_mutex_unlock(&mtxMatrix);
 	}
 }
 

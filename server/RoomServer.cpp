@@ -6,9 +6,10 @@ void RoomServer::getUsersName(std::vector<std::string>& users) const {
 }
 
 void RoomServer::addUser(UserServer* u) {
-	pthread_mutex_lock(&mtxRoom);
-	a_users.push_back(u);
-	pthread_mutex_unlock(&mtxRoom);
+	{
+		Locker l(&mtxRoom);
+		a_users.push_back(u);
+	}
 
 	std::vector<std::string> tokens;
 	tokens.push_back(std::to_string(a_roomNo));
@@ -22,11 +23,12 @@ void RoomServer::addUser(std::vector<UserServer*> users) {
 }
 
 int RoomServer::rmUser(UserServer* u) {
-	pthread_mutex_lock(&mtxRoom);
-	std::vector<UserServer*>::iterator it = std::find(a_users.begin(), a_users.end(), u);
-	if ( it != a_users.end() )
-		a_users.erase(it);
-	pthread_mutex_unlock(&mtxRoom);
+	{
+		Locker l(&mtxRoom);
+		std::vector<UserServer*>::iterator it = std::find(a_users.begin(), a_users.end(), u);
+		if ( it != a_users.end() )
+			a_users.erase(it);
+	}
 
 	std::vector<std::string> tokens;
 	tokens.push_back(std::to_string(a_roomNo));
