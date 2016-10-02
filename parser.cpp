@@ -1,44 +1,31 @@
 #include "parser.h"
 
+void MsgWriter::init(const std::string& msg) {
+	uint16_t sz = msg.length();
+  uint16_t nsz = htons(sz);
+
+  a_sz = sz + sizeof(uint16_t);
+  a_buf = reinterpret_cast<char*> (malloc(a_sz));
+
+  memcpy(a_buf, &nsz, sizeof(uint16_t));
+  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
+}
+
 MsgWriter::MsgWriter(const std::vector<std::string>& tokens, int identifier) {
 	std::string msg = std::to_string(identifier) + "\n";
   for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
 		msg += *it + "\n";
-
-  uint16_t sz = msg.length();
-  uint16_t nsz = htons(sz);
-
-  a_sz = sz + sizeof(uint16_t);
-  a_buf = reinterpret_cast<char*> (malloc(a_sz));
-
-  memcpy(a_buf, &nsz, sizeof(uint16_t));
-  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
+	init(msg);
 }
 
 MsgWriter::MsgWriter(const std::string& token, int identifier) {
   std::string msg = std::to_string(identifier) + "\n" + token + "\n";
-
-  uint16_t sz = msg.length();
-  uint16_t nsz = htons(sz);
-
-  a_sz = sz + sizeof(uint16_t);
-  a_buf = reinterpret_cast<char*> (malloc(a_sz));
-
-  memcpy(a_buf, &nsz, sizeof(uint16_t));
-  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
+	init(msg);
 }
 
 MsgWriter::MsgWriter(int identifier) {
   std::string msg = std::to_string(identifier) + "\n";
-
-  uint16_t sz = msg.length();
-  uint16_t nsz = htons(sz);
-
-  a_sz = sz + sizeof(uint16_t);
-  a_buf = reinterpret_cast<char*> (malloc(a_sz));
-
-  memcpy(a_buf, &nsz, sizeof(uint16_t));
-  memcpy(a_buf + sizeof(uint16_t), msg.c_str(), sz);
+	init(msg);
 }
 
 MsgWriter::~MsgWriter() {

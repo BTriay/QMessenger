@@ -33,10 +33,11 @@ class MsgWriter {
 private:
 	char * a_buf;
 	size_t a_sz;
+	void init(const std::string& msg);
 public:
-    MsgWriter(const std::vector<std::string>& tokens, int identifier);
-    MsgWriter(const std::string& token, int identifier);
-    explicit MsgWriter(int identifier);
+	MsgWriter(const std::vector<std::string>& tokens, int identifier);
+	MsgWriter(const std::string& token, int identifier);
+	explicit MsgWriter(int identifier);
 	~MsgWriter();
 	char* getMsg() const { return a_buf; }
 	size_t getSz() const { return a_sz; }
