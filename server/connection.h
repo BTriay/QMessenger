@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <sys/epoll.h>
 #include <fcntl.h>
+#include <memory>
 
 #ifdef TEST_COUT
 #include <iostream>

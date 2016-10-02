@@ -2,9 +2,9 @@
 
 /* ************************************ PUBLIC ************************************ */
 ThreadFunc::ThreadFunc(Bundle* bundle) {
-	a_db = bundle->db;
-	a_matrix = bundle->matrix;
-	a_epfd = bundle->epfd;
+	a_db = bundle->db();
+	a_matrix = bundle->matrix();
+	a_epfd = bundle->epfd();
 }
 
 void ThreadFunc::operator() (int identifier, int socket, std::vector<std::string>& tokens) {

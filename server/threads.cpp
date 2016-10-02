@@ -6,33 +6,30 @@ void* threadStart(void *arg) {
 	pthread_detach(pthread_self());
 	ThreadFunc func(reinterpret_cast<Bundle *> (arg));
 
-	std::string msg;
 	std::vector<std::string> msgTokens;
-
 	struct epoll_event ev[1];
 	int fd;
 	int event;
-	int i;
 
 	while (true) {
-		pthread_mutex_lock(&mtxEpoll);
-		epoll_wait(func.epfd(), ev, 1, -1);
-		event = ev[0].events;
-		fd = ev[0].data.fd;
-		pthread_mutex_unlock(&mtxEpoll);
+		{
+			Locker l(&mtxEpoll);
+			epoll_wait(func.epfd(), ev, 1, -1);
+			event = ev[0].events;
+			fd = ev[0].data.fd;
+		}
 
 		if (event & EPOLLRDHUP)
 			func(USER_HANGUP, fd, msgTokens);
 		else if (event & EPOLLIN) {
-			msg.clear();
+			std::string msg;
 			getSocketMsg(msg, fd);
 			if (!msg.empty()) {
-
-#ifdef TEST_COUT
-std::cout << "\n**msg start**\n" << msg << "**msg end**\n";
-#endif
+				#ifdef TEST_COUT
+				std::cout << "\n**msg start**\n" << msg << "**msg end**\n";
+				#endif
 				msgTokens.clear();
-				i = msgParser(msg, msgTokens);
+				int i = msgParser(msg, msgTokens);
 				func(i, fd, msgTokens);
 			}
 			rearmFD(func.epfd(), fd);

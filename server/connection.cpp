@@ -39,7 +39,6 @@ int sbind(const char* port) {
 		return -1;
 	}
 	free(res);
-	free(p);
 	return sock;
 }
 
