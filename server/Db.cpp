@@ -2,22 +2,22 @@
 
 /***********************PRIVATE METHODS ***********************/
 void Db::insertTables() {
-	const char* clientStmt = "create table CLIENT ( \
+	std::string clientStmt{"create table CLIENT ( \
 														 id integer primary key, \
 														 name text not null, \
 														 hash text not null, \
-														 salt text);";
+														 salt text);"};
 //salt will be null until cryptographic functions are in... and "hash" will actually be the pwd in clear text
-	sqlite3_exec(a_db, clientStmt, NULL, NULL, NULL);
+	sqlite3_exec(a_db, clientStmt.c_str(), NULL, NULL, NULL);
 
-	const char* friendStmt = "create table FRIEND ( \
+	std::string friendStmt{"create table FRIEND ( \
 														 user1 integer not null, \
 														 friendConfUser1 integer not null, \
 														 user2 integer not null, \
 														 friendConfUser2 integer not null, \
 														 foreign key (user1) references client(id) on delete cascade, \
-														 foreign key (user2) references client(id) on delete cascade);";
-	sqlite3_exec(a_db, friendStmt, NULL, NULL, NULL);
+														 foreign key (user2) references client(id) on delete cascade);"};
+	sqlite3_exec(a_db, friendStmt.c_str(), NULL, NULL, NULL);
 }
 
 int Db::getUserID(const std::string& username) {
