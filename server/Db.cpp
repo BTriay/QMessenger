@@ -88,8 +88,8 @@ Db::Db(std::string dbName, bool createDB) {
 	sqlite3_open(dbName.c_str(), &a_db);
 	if (createDB)
 		insertTables();
-	const char* fKey = "PRAGMA foreign_keys = ON;";
-	sqlite3_exec(a_db, fKey, NULL, NULL, NULL);
+	std::string fKey{"PRAGMA foreign_keys = ON;"};
+	sqlite3_exec(a_db, fKey.c_str(), NULL, NULL, NULL);
 }
 
 Db::~Db() {
