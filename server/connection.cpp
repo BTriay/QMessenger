@@ -20,7 +20,9 @@ int ssocket() {
 }
 
 int sbind(const char* port) {
-	struct addrinfo *res, *p;
+	std::unique_ptr<struct addrinfo> sres(new struct addrinfo);
+	struct addrinfo *res = sres.get();
+	struct addrinfo *p;
 	getaddrinfoRes(&res, port);
 
 	int sock;
@@ -38,7 +40,6 @@ int sbind(const char* port) {
 #endif
 		return -1;
 	}
-	free(res);
 	return sock;
 }
 
