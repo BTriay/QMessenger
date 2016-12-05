@@ -4,6 +4,7 @@
 #include <string>
 #include <sys/epoll.h>
 #include <iostream>
+#include <memory>
 
 #include "../parser.h"
 #include "Db.h"
@@ -18,18 +19,17 @@
 
 class Bundle {
 private:
-	MatrixServer* a_matrix;
-	Db* a_db;
+	std::unique_ptr<MatrixServer> a_matrix;
+	std::unique_ptr<Db> a_db;
 	int a_epfd;
 	int a_threadNo; //for init only, not used in the threads
 	std::string a_portNo; //for init only, not used in the threads
 
 public:
 	Bundle();
-	~Bundle();
 
-	MatrixServer* matrix() {return a_matrix;}
-	Db* db() {return a_db;}
+	MatrixServer* matrix() {return a_matrix.get();}
+	Db* db() {return a_db.get();}
 	std::string portNo() const {return a_portNo;}
 	int threadsNo() const {return a_threadNo;}
 	int epfd() {return a_epfd;}

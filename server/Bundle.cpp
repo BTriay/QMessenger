@@ -11,7 +11,7 @@ Bundle::Bundle() {
 			if (*it == CONFIG_DB) {
 				++it;
 				std::ifstream f((*it).c_str(), std::ios_base::in);
-				a_db = new Db(*it, !f.good());
+				a_db = std::make_unique<Db>(*it, !f.good());
 				conf_db = true;
 			}
 			else if (*it == CONFIG_THREADS) {
@@ -33,16 +33,9 @@ Bundle::Bundle() {
 		a_portNo = CONFIG_PORT_DEF;
 	if (!conf_db) {
 		std::ifstream f(CONFIG_DB_DEF, std::ios_base::in);
-		a_db = new Db(CONFIG_DB_DEF, !f.good());
+		a_db = std::make_unique<Db>(CONFIG_DB_DEF, !f.good());
 	}
 
-	a_matrix = new MatrixServer();
+	a_matrix = std::make_unique<MatrixServer>();
 	a_epfd = epoll_create1(0);
-std::cout << "bundle constructor: " << a_epfd << "\n";
-}
-
-Bundle::~Bundle() {
-std::cout << "bundle destructor\n";
-	delete a_db;
-	delete a_matrix;
 }
