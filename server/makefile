@@ -1,4 +1,6 @@
-C11=-std=c++11
+GCC=g++-6
+C14=-std=c++14
+FLAGS=-Wall -Wextra
 THREADING=-lpthread -ldl
 SER=-DSERVER
 TEST=-DTEST_COUT
@@ -9,40 +11,40 @@ objFiles = main.o connection.o threads.o ThreadFunc.o Db.o MatrixServer.o UserSe
 all:server
 
 server: $(objFiles)
-	g++ -o server $(objFiles) $(THREADING) $(TEST)
+	$(GCC) -o server $(objFiles) $(THREADING) $(TEST)
 
 main.o: main.cpp
-	g++ -c $(DEBUG) $(C11) main.cpp
+	$(GCC) -c $(DEBUG) $(C14) main.cpp
 
 parser.o: ../parser.cpp
-	g++ -c $(DEBUG) $(C11) ../parser.cpp $(SER) $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) ../parser.cpp $(SER) $(TEST)
 
 ThreadFunc.o: ThreadFunc.cpp
-	g++ -c $(DEBUG) $(C11) ThreadFunc.cpp $(THREADING) $(SER) $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) ThreadFunc.cpp $(THREADING) $(SER) $(TEST)
 
 threads.o: threads.cpp
-	g++ -c $(DEBUG) $(C11) threads.cpp $(THREADING) $(SER) $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) threads.cpp $(THREADING) $(SER) $(TEST)
 
 Bundle.o: Bundle.cpp
-	g++ -c $(DEBUG) $(C11) Bundle.cpp $(SER) $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) Bundle.cpp $(SER) $(TEST)
 
 Db.o: Db.cpp
-	g++ -c $(DEBUG) $(C11) Db.cpp $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) Db.cpp $(TEST)
 
 MatrixServer.o: MatrixServer.cpp
-	g++ -c $(DEBUG) $(C11) MatrixServer.cpp $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) MatrixServer.cpp $(TEST)
 
 UserServer.o: UserServer.cpp
-	g++ -c $(DEBUG) $(C11) UserServer.cpp $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) UserServer.cpp $(TEST)
 
 User.o: ../User.cpp
-	g++ -c $(DEBUG) $(C11) ../User.cpp $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) ../User.cpp $(TEST)
 
 RoomServer.o: RoomServer.cpp
-	g++ -c $(DEBUG) $(C11) RoomServer.cpp $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) RoomServer.cpp $(TEST)
 
 connection.o: connection.cpp
-	g++ -c $(DEBUG) $(C11) connection.cpp $(TEST)
+	$(GCC) -c $(DEBUG) $(C14) connection.cpp $(TEST)
 
 sqlite3.o: ../sqlite-amalgamation/sqlite3.c
 	gcc -c ../sqlite-amalgamation/sqlite3.c -DSQLITE_THREADSAFE $(TEST) #$(THREADING)
