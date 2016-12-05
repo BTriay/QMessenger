@@ -22,7 +22,7 @@ int ssocket() {
 }
 
 int sbind(const char* port) {
-	std::unique_ptr<struct addrinfo> sres(new struct addrinfo);
+	std::unique_ptr<struct addrinfo> sres = std::make_unique<struct addrinfo>();
 	struct addrinfo *res = sres.get();
 	struct addrinfo *p;
 	if (getaddrinfoRes(&res, port) == -1)
